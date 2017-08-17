@@ -1,95 +1,61 @@
+module Main exposing (..)
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Http
-import Json.Decode as Decode
-
-
-
-main =
-  Html.program
-    { init = init "dogs"
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
-
-
 
 -- MODEL
 
-
 type alias Model =
-  { topic : String
-  , gifUrl : String
+  {
   }
 
+-- INIT
 
-init : String -> (Model, Cmd Msg)
-init topic =
-  ( Model topic "waiting.gif"
-  , getRandomGif topic
-  )
-
-
-
--- UPDATE
-
-
-type Msg
-  = MorePlease
-  | NewGif (Result Http.Error String)
-
-
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-  case msg of
-    MorePlease ->
-      (model, getRandomGif model.topic)
-
-    NewGif (Ok newUrl) ->
-      (Model model.topic newUrl, Cmd.none)
-
-    NewGif (Err _) ->
-      (model, Cmd.none)
-
-
+init : (Model, Cmd Message)
+init =
+  (Model, Cmd.none)
 
 -- VIEW
 
-
-view : Model -> Html Msg
+view : Model -> Html Message
 view model =
-  div []
-    [ h2 [] [text model.topic]
-    , button [ onClick MorePlease ] [ text "More Please!" ]
-    , br [] []
-    , img [src model.gifUrl] []
+  -- The inline style is being used for example purposes in order to keep this example simple and
+  -- avoid loading additional resources. Use a proper stylesheet when building your own app.
+
+  div [ class "form-group" ]
+  [ label [ class "col-sm-2 control-label" ]
+    [ text "Task" ]
+  , div [ class "col-sm-10" ]
+    [ input [ class "form-control", placeholder "Task" ]
+      []
     ]
+  ]
 
+-- MESSAGE
 
+type Message
+  = None
+
+-- UPDATE
+
+update : Message -> Model -> (Model, Cmd Message)
+update message model =
+  (model, Cmd.none)
 
 -- SUBSCRIPTIONS
 
-
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub Message
 subscriptions model =
   Sub.none
 
+-- MAIN
 
-
--- HTTP
-
-
-getRandomGif : String -> Cmd Msg
-getRandomGif topic =
-  let
-    url =
-      "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
-  in
-    Http.send NewGif (Http.get url decodeGifUrl)
-
-
-decodeGifUrl : Decode.Decoder String
-decodeGifUrl =
-  Decode.at ["data", "image_url"] Decode.string
+main : Program Never Model Message
+main =
+  Html.program
+    {
+      init = init,
+      view = view,
+      update = update,
+      subscriptions = subscriptions
+    }
