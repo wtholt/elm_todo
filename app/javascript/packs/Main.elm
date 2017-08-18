@@ -1,4 +1,5 @@
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode
@@ -37,12 +38,13 @@ update msg model =
 
     NewQuote (Result.Err _) ->
       (model, Cmd.none)
+
 view : Model -> Html Msg
 
 view model =
   div []
   [ h2 [] [text "Seinfeld Quotes" ]
-  , button [ onClick GetQuote ] [ text "More Seinfeld Please!" ]
+  , button [ class "btn btn-primary", onClick GetQuote ] [ text "More Seinfeld Please!" ]
   , br [] []
   , p [] [ text model.name ]
   ]

@@ -1,7 +1,7 @@
 class TodosController < ApplicationController
 
   def index
-    @todos = Todo.all.sample(1)
+    @todos = Todo.all.sample(1).first
     respond_to do |format|
       format.html
       format.json { render json: @todos }
