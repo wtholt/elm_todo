@@ -1,97 +1,65 @@
--- Read all about this program in the official Elm guide:
--- https://guide.elm-lang.org/architecture/user_input/forms.html
-
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
-
+import Html.Events exposing (..)
+import Http
+import Json.Decode as Decode
 
 main =
-  Html.beginnerProgram
-    { model = model
-    , view = view
-    , update = update
-    }
-
-
-
--- MODEL
-
-
-type alias Model =
-  { name : String
-  , password : String
-  , passwordAgain : String
-  , age : Maybe Int
+  Html.program
+  {
+    init = init "name"
+  , view = view
+  , update = update
+  , subscriptions = subscriptions
   }
 
+type alias Model =
+  {
+    name : String
+  }
 
-model : Model
-model =
-  Model "" "" "" ""
-
-
-
--- UPDATE
-
+init : String -> (Model, Cmd Msg)
+init name =
+  ( Model "", getRandomQuote )
 
 type Msg
-    = Name String
-    | Password String
-    | PasswordAgain String
-    | Age Maybe Int
+  = GetQuote
+  | NewQuote (Result Http.Error String)
 
+update : Msg -> Model -> (Model, Cmd Msg)
 
-update : Msg -> Model -> Model
 update msg model =
   case msg of
-    Name name ->
-      { model | name = name }
+    GetQuote ->
+      (model, getRandomQuote)
 
-    Password password ->
-      { model | password = password }
+    NewQuote (Ok name) ->
+      ( { model | name = name }, Cmd.none)
 
-    PasswordAgain password ->
-      { model | passwordAgain = password }
-
-    Age age ->
-      { model | age = String.toInt(age) }
-
-
--- VIEW
-
-
+    NewQuote (Result.Err _) ->
+      (model, Cmd.none)
 view : Model -> Html Msg
+
 view model =
   div []
-    [ input [ type_ "text", placeholder "Name", onInput Name ] []
-    , input [ type_ "password", placeholder "Password", onInput Password ] []
-    , input [ type_ "password", placeholder "Re-enter Password", onInput PasswordAgain ] []
-    , input [ type_ "age", placeholder "Age", onInput Age ] []
-    , viewValidation model
-    , passwordLength model
-    ]
+  [ h2 [] [text "Seinfeld Quotes" ]
+  , button [ onClick GetQuote ] [ text "More Seinfeld Please!" ]
+  , br [] []
+  , p [] [ text model.name ]
+  ]
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
 
-viewValidation : Model -> Html msg
-viewValidation model =
+getRandomQuote : Cmd Msg
+
+getRandomQuote =
   let
-    (color, message) =
-      if model.password == model.passwordAgain then
-        ("green", "OK")
-      else
-        ("red", "Passwords do not match!")
+    url =
+      "http://localhost:5000/todos.json"
   in
-    div [ style [("color", color)] ] [ text message ]
+    Http.send NewQuote (Http.get url decodeUrl)
 
-passwordLength : Model -> Html msg
-passwordLength model =
-  let
-    (display, message) =
-      if String.length model.password >= 8 then
-        ("hide", "")
-      else
-        ("", "Password must be at least 8 characters")
-  in
-    div [ class display ] [ text message ]
-
+decodeUrl : Decode.Decoder String
+decodeUrl =
+  Decode.at ["name"] Decode.string
